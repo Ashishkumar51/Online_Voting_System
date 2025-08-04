@@ -1,0 +1,540 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: rgb(222, 231, 235);
+            font-family: 'Poppins', Arial, Helvetica, sans-serif;
+        }
+
+        /* VotingGO Icon */
+        h2 {
+            border-radius: 6px;
+            margin-right: 8px;
+            margin-bottom: 15px;
+            /* border: 2.85px solid #29b7fa; */
+            font-size: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #29b7fa, );
+            padding: 15px;
+            color: #ffffff;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h2 img.icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            margin-top: -5px;
+        }
+
+        /* .back_g{
+            top: 5px;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: -1;
+            filter: brightness(0.6);
+        } */
+        /* Sidebar */
+        .sc {
+            background-color: #1b2838;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            padding-bottom: 22px;
+            bottom: 12px;
+        }
+
+        .sc ul {
+            list-style: none;
+            background-color: #0d1723;
+            padding: 6px;
+            border-left: 2.61px solid #29b7fa;
+            margin-top: 15px;
+            margin-left: 5px;
+            margin-right: 20px;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+
+        }
+
+        .sc ul:hover {
+            background-color: #1f3b4d;
+        }
+
+        .sc ul:active {
+            background-color: #1f3b4d;
+        }
+
+        .sc li {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 10px 45px;
+        }
+
+        .sc i {
+            margin-right: 10px;
+            color: #29b7fa;
+            pointer-events: none;
+        }
+
+        .sc a {
+            display: block;
+            text-decoration: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Topbar */
+        .topbar {
+            background-color: #1b2838fc;
+            border-bottom: 5px solid #00bef3;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 11vh;
+            position: fixed;
+            width: calc(100% - 250px);
+            left: 250px;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar h3 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .status {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Overview Section */
+        .overview {
+            background-color: #ffffff;
+            border-radius: 5px;
+            margin-top: 110px;
+            margin-bottom: 11px;
+            padding: 20px;
+            width: calc(100% - 320px);
+            height: 150vh;
+            margin-left: 280px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .overview h2 {
+            color: #ffffff;
+            background-color: rgb(12, 181, 187);
+            font-size: 24px;
+            margin-top: 10px;
+            margin-bottom: 35px;
+            border: none;
+        }
+
+        /* Graph Section */
+        .graph-section {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .graph,
+        .pie-chart {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            width: 60%;
+            height: 41vh;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .pie-chart {
+            width: 40%;
+        }
+
+        /* Vote Count Boxes */
+        .vote-count {
+            width: 25%;
+            height: 20vh;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            margin-top: 10px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            padding: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .vote-count:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .vote-count h1 {
+            font-size: 30px;
+            color: #ffffff;
+        }
+
+        .vote-count.completed h1 {
+            color: rgb(255, 255, 255);
+        }
+
+        .vote-section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .vote-section div {
+            background-color: #fc6c25;
+        }
+
+        .vote-count p {
+            color: #ffffff;
+        }
+
+        .fa-solid,
+        .fa-regular {
+            color: #9f3a08;
+            margin-right: 15px;
+        }
+
+        .LOGOUT {
+            margin-top: 85px;
+            margin-left: 55px;
+            width: 50%;
+            padding: 12px;
+            background-color: #29b7fa;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .topbar li {
+            list-style: none;
+            background-color: white;
+            padding-top: 5px;
+            padding-bottom: 11px;
+            padding-right: 11px;
+            padding-left: 15px;
+            border-radius: 5px;
+            right: 12.6%;
+            justify-content: flex-start;
+            position: absolute;
+
+        }
+
+        .topbar li a {
+            text-decoration: none;
+            list-style: none;
+            font-size: 18px;
+            color: #1b2838;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            right: 15px;
+            top: 5px;
+            cursor: pointer;
+        }
+
+        .dropdown-content {
+            top: 35px;
+            left: 20px;
+            position: absolute;
+            display: none;
+            min-width: 260px;
+            background-color: #f9f9f9;
+            background: #1B2838;
+            z-index: 1;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-content a {
+            padding: 20px;
+            width: 100%;
+            background: #1B2838;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            font-weight: 300;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .dropdown-content a:hover {
+            background: #0d1d2d;
+            color: #ffffff;
+            border-left: 5px solid #00aeff;
+        }
+    </style>
+
+    <style>
+
+    @media screen and (max-width: 1200px) {
+      .overview {
+        width: calc(100% - 280px);
+        margin-left: 260px;
+      }
+      .graph-section {
+        flex-direction: column;
+      }
+      .graph, .pie-chart {
+        width: 100%;
+      }
+      .topbar h3 {
+        display: none;
+      }
+    }
+
+    @media screen and (max-width: 950px) {
+      .sc {
+        width: 200px;
+      }
+      .topbar {
+        width: calc(100% - 200px);
+        left: 200px;
+      }
+      .overview {
+        width: calc(100% - 220px);
+        margin-left: 210px;
+      }
+      .vote-section {
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+      .vote-count {
+        width: 45%;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .sc {
+        width: 70px;
+        overflow: hidden;
+      }
+      .sc h2, .sc a {
+        font-size: 0;
+      }
+      .sc i {
+        font-size: 20px;
+        margin-right: 0;
+      }
+      .sc ul {
+        margin: 10px;
+        padding: 5px;
+      }
+      .sc li {
+        padding: 15px;
+        justify-content: center;
+      }
+      .LOGOUT {
+        margin-left: 10px;
+        width: 80%;
+      }
+      .LOGOUT p {
+        font-size: 0;
+      }
+      .topbar {
+        width: calc(100% - 70px);
+        left: 70px;
+      }
+      .overview {
+        width: calc(100% - 90px);
+        margin-left: 80px;
+      }
+      .vote-count {
+        width: 100%;
+      }
+      .topbar h3 {
+        font-size: 16px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .topbar {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+      }
+      .status {
+        margin-top: 10px;
+      }
+      .dropdown {
+        position: static;
+        margin-top: 10px;
+      }
+      .dropdown-content {
+        width: 100%;
+        left: 0;
+      }
+      .overview {
+        margin-top: 150px;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+    <!-- <img src="12.jpg" alt="" class="back_g"> -->
+
+    <!-- Sidebar -->
+    <div>
+        <section class="sc">
+            <h2><img class="icon" src="{% static 'image/logo.png' %}" alt="VotingGO Logo">VotingGO</h2>
+            <ul>
+                <li>
+                    <i class="fa-solid fa-earth-asia"></i><a href="{% url 'dashboard' %}">Dashboard</a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <i class="fa-solid fa-rectangle-list"></i><a href="{% url 'overview' %}">Overview</a>
+                </li>
+            </ul>
+            <ul>
+                <li onclick="replaceDivWithExternalcontent2(event)"><i class="fa-solid fa-gears"></i><a>Registration</a>
+                </li>
+            </ul>
+            <ul>
+                <li><i class="fa-solid fa-square-poll-vertical"></i><a href="electiontable.html">Election</a></li>
+            </ul>
+            <ul>
+                <li><i class="fa-solid fa-inbox"></i><a href="voters.html">Candidates</a></li>
+            </ul>
+            <ul>
+                <li><i class="fa-solid fa-inbox"></i><a href="voters.html">Voters</a></li>
+            </ul>
+            <ul>
+                <li><i class="fa-solid fa-check-to-slot"></i><a href="Result.html">Results</a></li>
+            </ul>
+            <ul>
+                <li><i class="fa-solid fa-inbox"></i><a href="votes.html">Votes</a></li>
+            </ul>
+            <div class="LOGOUT">
+                <p><i class="fa-solid fa-arrow-right-from-bracket" style="color: white; font-size: 1.1rem;"
+                        onclick=""></i>LOGOUT
+                </p>
+            </div>
+            <div style="display: flex; flex-direction: row;">
+                <p
+                    style="font-size: 15px; bottom: 25px; margin-top: 74px; margin-left: 8px; color: #00aeff; text-align: center;">
+                    Terms of Services</p>
+                <p
+                    style="font-size: 15px;  margin-top: 61px; margin-left: 5px; color: #00aeff; text-align: center; padding: 12px;">
+                    privacy policy</p>
+            </div>
+        </section>
+
+        {% block content %}
+          
+        {% endblock content %}
+
+        <!-- Topbar -->
+        <section class="topbar">
+            <h3 style="font-size: 22px;">Lok Sabha Election 2024 (1st Phase)</h3>
+            <p id="demo" style="color: white; font-family: Arial, Helvetica, sans-serif; position: relative; "></p>
+            <script>
+                function showDateTime() {
+                    // Create a new Date object
+                    const today = new Date();
+
+                    // Extract the day, month, and year
+                    const day = today.getDate();
+                    const month = today.getMonth() + 1; // Months are zero-indexed
+                    const year = today.getFullYear();
+
+                    // Extract the hours, minutes, and seconds
+                    const hours = today.getHours();
+                    const minutes = today.getMinutes();
+                    const seconds = today.getSeconds();
+
+                    // Format the date as DD/MM/YYYY
+                    const formattedDate = `${day}/${month}/${year}`;
+
+                    // Format the time as HH:MM:SS
+                    const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                    // Display both the date and time in the element with id 'demo'
+                    document.getElementById("demo").innerHTML = "🕝" + "  " + "Live Time :" + " " + `${formattedDate} ${formattedTime}`;
+                }
+
+                // Update the time every second
+                setInterval(showDateTime, 1000);
+
+            </script>
+            <div class="dropdown" id="dropdown">
+                <div
+                    style="background: #ffffff; padding: 8px; border-radius: 2px; display: flex; position: relative;padding-right: 0px; top: -5px; left: 20px;">
+                    <i class="fa-solid fa-id-card-clip" style="color: #00aeff; justify-content: start;"></i>
+                    <div style="position: relative; top: 2px; right: 5px;">
+                        <h4>My Profile</h4>
+                    </div><i class="fa-solid fa-caret-down" style="padding-left: 5px; color: #0d1d2d;"></i>
+                </div>
+                <div class="dropdown-content">
+                    <div style="display: flex; flex-direction: row; width: 100%;">
+                        <p style="padding: 20px; color: white; text-align: center;">Ashish kumar</p>
+                    </div>
+                    <div style="display: flex; flex-direction: row; width: 100%; border-top: 2px solid #00aeff; ">
+                        <a href=""><i class="fa-solid fa-user" style=" color: #00aeff; "></i>Edit profile</a>
+                    </div>
+                    <div style="display: flex; flex-direction: row; width: 100%;">
+                        <a href=""><i class="fa-solid fa-gear" style=" color: #00aeff;"></i>Setting & privacy</a>
+                    </div>
+                    <div style="display: flex; flex-direction: row; width: 100%;">
+                        <a href=""><i class="fa-solid fa-question" style=" color: #00aeff;"></i>Help & Support</a>
+                    </div>
+                    <div style="display: flex; flex-direction: row; width: 100%;">
+                        <a href=""><i class="fa-solid fa-moon" style=" color: #00aeff;"></i>Display & Accessibility</a>
+                    </div>
+                    <div style="display: flex; flex-direction: row; width: 100%;">
+                        <a href="login@.html"><i class="fa-solid fa-arrow-right-from-bracket"
+                                style=" color: #00aeff;"></i>LOGOUT</a>
+                    </div>
+                </div>
+            </div>
+            <span class="status"><i class="fa-regular fa-circle-check"
+                    style="color: #ffffff; margin-right: 5px;"></i><span class="tick">Login</span></span>
+        </section>
+
+
+    </div>
+
+</body>
+
+</html>

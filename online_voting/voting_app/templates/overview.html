@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Voting Dashboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<section class="overview" id="dashboard">
+    <h2><i class="fa-solid fa-earth-asia" style="color: white;"></i> Overview</h2>
+    <p style="color: rgb(11, 210, 11); margin-top: 5px; font-size: 26px;"><b>Welcome to VotingGo</b></p>
+    <p style="color: rgb(110, 179, 184); margin-top: 5px; font-size: 16px;"><b>Hello, Ashish, how is there!</b></p>
+
+
+    <!-- Graph Section -->
+    <section class="dashboard-graphs">
+        <div class="graph-section" style="display: flex; gap: 30px;">
+            <div class="graph" style="width: 100%;">
+                <canvas id="profileBarChart"></canvas>
+            </div>
+            <div class="pie-chart" style="width: 100%;">
+                <canvas id="profileDonutChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vote Count Boxes -->
+    <div class="vote-section" style="display: flex; gap: 20px; margin-top: 30px;">
+        <div class="vote-count" style="background-color: #ff990b; padding: 20px; color: white;">
+            <h1><i class="fa-solid fa-users-line"></i> 120.00</h1>
+            <p>User 1</p>
+        </div>
+        <div class="vote-count completed" style="background-color: #ee1c75; padding: 20px; color: white;">
+            <h1><i class="fa-solid fa-users-line" style="color: #87053b;"></i> 200.00</h1>
+            <p>User 2</p>
+        </div>
+        <div class="vote-count verified-voters" style="background-color:#28a745; padding: 20px; color: white;">
+            <h1><i class="fa-solid fa-users-line" style="color: #085f1d;"></i> 150.00</h1>
+            <p>User 3</p>
+        </div>
+        <div class="vote-count verified-voters" style="background-color:#06d1d1; padding: 20px; color: white;">
+            <h1><i class="fa-solid fa-users-line" style="color: #046d6d;"></i> 80.00</h1>
+            <p>User 4</p>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    // Load Graphs on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        loadGraphs();
+    });
+
+    function loadGraphs() {
+        // Bar Chart
+        const ctxBar = document.getElementById('profileBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['User A', 'User B', 'User C', 'User D'],
+                datasets: [{
+                    label: 'Profile Views',
+                    data: [120, 200, 150, 80],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(54, 162, 235, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Profile Views Analysis',
+                    },
+                    legend: {
+                        display: true,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Donut Chart
+        const ctxDonut = document.getElementById('profileDonutChart').getContext('2d');
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active Users', 'Inactive Users', 'New Users', 'Returning Users'],
+                datasets: [{
+                    label: 'User Types',
+                    data: [300, 50, 100, 150],
+                    backgroundColor: ['#4CAF50', '#FFC107', '#FF6384', '#36A2EB'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'User Type Distribution',
+                    },
+                    legend: {
+                        display: true,
+                    }
+                }
+            }
+        });
+    }
+
+    // Optional dropdown handler (if dropdown exists)
+    const dropdown = document.getElementById('dropdown');
+    if (dropdown) {
+        dropdown.addEventListener('click', function (e) {
+            document.querySelector('.dropdown-content').style.display = 'block';
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!dropdown.contains(e.target)) {
+                document.querySelector('.dropdown-content').style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

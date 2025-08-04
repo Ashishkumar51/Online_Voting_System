@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<title>Voting Registration</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+
+    .form-title {
+        font-size: 28px;
+        color: #12e00b;
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    /* Registration Form Styling */
+    #candidateRegistrationForm {
+        background-color: #ffffff;
+        padding: 40px 30px;
+        border-radius: 1px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 40px;
+        border: 1px solid #b0f2ff;
+    }
+
+    #candidateRegistrationForm:hover {
+        box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .overview {
+            background-color: #ffffff;
+            border-radius: 5px;
+            margin-top: 110px;
+            margin-bottom: 11px;
+            padding: 20px;
+            width: calc(100% - 320px);
+            height: 196vh;
+            margin-left: 280px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+    #candidateRegistrationForm label {
+        display: block;
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    #candidateRegistrationForm input {
+        width: 100%;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+    }
+
+    #candidateRegistrationForm input:focus {
+        border-color: #0a4851;
+        background-color: #ffffff;
+        outline: none;
+    }
+
+    /* Voting Criteria Section */
+    .criteria-section {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 2px solid #0a4851;
+        margin-bottom: 40px;
+    }
+
+    .criteria-section h3 {
+        font-size: 1.4rem;
+        color: #0a4851;
+        margin-bottom: 15px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* Buttons */
+    #candidateRegistrationForm button {
+        background-color: #0b82fa;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        width: 10%;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    #candidateRegistrationForm button:hover {
+        background-color: #00aeff;
+        transform: translateY(-2px);
+    }
+
+    #candidateRegistrationForm .cancel-btn {
+        background-color: #f44336;
+    }
+
+    #candidateRegistrationForm .cancel-btn:hover {
+        background-color: #e53935;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    #candidateRegistrationForm {
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+
+        #candidateRegistrationForm {
+            padding: 20px;
+        }
+
+        #candidateRegistrationForm input {
+            width: 100%;
+        }
+
+        #candidateRegistrationForm button {
+            width: 100%;
+            margin-top: 20px;
+        }
+    }
+
+</style>
+
+<div class="container">
+    <h2><i class="fa-solid fa-earth-asia" style="color: #0a4851 ;"></i> Registration Form</h2>
+    <p class="form-title">Let's create a VotingGo</p>
+
+    <!-- Candidate Registration Form -->
+    <form id="candidateRegistrationForm" onsubmit="submitCandidateForm(event)">
+        <h3 style="color: #126c7a; font-size: larger;">Candidate Registration</h3><br><br>
+
+        <label for="candidateName">Candidate Id</label>
+        <input type="text" id="candidateName" name="candidateName" required placeholder="Enter your full name">
+        
+
+        <label for="candidateName">Candidate Name</label>
+        <input type="text" id="candidateName" name="candidateName" required placeholder="Enter your full name">
+
+        <label for="candidateName">Candidate Address</label>
+        <input type="text" id="candidateName" name="candidateName" required placeholder="Enter your full name">
+
+        <label for="candidateName">Candidate Profession</label>
+        <input type="text" id="candidateName" name="candidateName" required placeholder="Enter your full name">
+
+        <label for="candidateName">Email Id</label>
+        <input type="text" id="candidateName" name="candidateName" required placeholder="Enter your full name">
+
+        <label for="candidateName">Define Election Domain</label>
+        <input type="text" id="candidateName" name="candidateName" required placeholder="Enter your full name">
+
+
+        <label for="electionName">Election Name</label>
+        <input type="text" id="electionName" name="electionName" required placeholder="Enter election name">
+
+        <!-- Voting Criteria Section -->
+        <div class="criteria-section">
+            <h3>Customize Voting Criteria</h3>
+
+            <label for="ageCriteria">Minimum Age of Voters</label>
+            <input type="number" id="ageCriteria" name="ageCriteria" min="18" required placeholder="Enter minimum age">
+
+            <label for="locationCriteria">Location</label>
+            <input type="text" id="locationCriteria" name="locationCriteria" min="10" required placeholder="Enter location">
+
+            <label for="voterLimit">Max Number of Voters</label>
+            <input type="number" id="voterLimit" name="voterLimit" required placeholder="Enter max number of voters">
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: space-between;">
+            <button type="submit">Register</button>
+            <button type="button" class="cancel-btn" onclick="document.getElementById('registrationFormSection').style.display='none';">Cancel</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+

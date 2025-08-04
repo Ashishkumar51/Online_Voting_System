@@ -1,0 +1,320 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            width: 75%;
+            background-color: rgb(255, 255, 255);
+            border-radius: 1px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 2s ease-in-out;
+        }
+        .back_g{
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            filter: brightness(0.7);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .left-side{
+           width: 100%;
+           position: relative;
+        }
+        .left-side img{
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            scale: 1.2;
+            filter: drop-shadow(0px 2px 4px blac);
+            /* filter: brightness(0.7); */
+        }
+
+        .left-side::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 246, 250, 0);
+            z-index: 1;
+        }
+
+        .left-side p {
+            position: relative;
+            z-index: 2;
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-side {
+            width: 100%;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #ffffff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .right-side::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            z-index: 0;
+            transform: rotate(45deg);
+            transition: transform 1s ease-in-out;
+        }
+
+        .right-side:hover::before {
+            transform: rotate(90deg);
+        }
+
+        .right-side h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 2.1rem;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+        .right-side h4 {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: #0084ff;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .right-side p {
+            position: relative;
+            z-index: 1;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: #666;
+            text-align: center;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        ::placeholder{
+            padding-left: 0.1rem !important;
+            margin-top: 55px !important;
+
+        }
+
+        .input-group label {
+            position: absolute;
+            font-size: 1rem;
+            top: -12px;
+            background-color: #ffffff;
+            color: #0072ff;
+            z-index: 5;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px;
+            padding-left: 40px;
+            border: none;
+            border-bottom: 2px solid #0072ff;
+            border-radius: 2px;
+            font-size: 1rem;
+            /* border: 1px solid #9a9a9a; */
+            transition: border-color 0.3s;
+            z-index: -5px;
+        }
+
+        .input-group input:focus {
+            border-color: #0084ff;
+            
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 198, 255, 0.35);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-buttons button {
+            width: 48%;
+            padding: 12px;
+            border: none;
+            border-radius: 2px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .action-buttons .signup-btn {
+            background-color: #0084ff;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+        }
+
+        .action-buttons .signup-btn:hover {
+            background-color: #ffffff;
+            color: #0084ff;;
+            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4);
+            border: 2px solid#0084ff;;
+        }
+
+        .action-buttons .login-btn {
+            background-color: #fff;
+            color: #0084ff;
+            border: 1px solid #0084ff;
+            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+        }
+
+        .action-buttons .login-btn:hover {
+            background-color: #0084ff;
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4);
+        }
+
+        .support-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .support-info a {
+            color: #00c6ff;
+            text-decoration: none;
+        }
+
+        .support-info a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                width: 95%;
+            }
+
+            .left-side, .right-side {
+                width: 100%;
+            }
+
+            .left-side {
+                display: none;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .right-side {
+                padding: 20px;
+            }
+
+            .right-side h1 {
+                font-size: 1.5rem;
+            }
+
+            .right-side p {
+                font-size: 0.9rem;
+            }
+
+            .input-group input {
+                padding: 8px;
+            }
+
+            .action-buttons button {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <img src="{% static 'image/12.jpg' %}" alt="" class="back_g">
+    <div class="container">
+        <div class="left-side">
+            <img src="{% static 'image/21.jpg' %}" alt=""  >
+        </div>
+        <div class="right-side">
+            <h4>VOTING MANAGEMENT SYSTEM</h4>
+            <h1>Login</h1>
+            <p>Create an account to participate in voting</p>
+            <form action="">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your Email">
+                </div>
+                <br>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password">
+                </div>
+                <div class="action-buttons">
+                    <button type="button" class="login-btn" onclick="window.location.href='{% url 'dashboard' %}'">Login</button>
+                    <button type="button" class="signup-btn" onclick="window.location.href='signup.html'">Sign Up</button>
+                </div>
+            </form>
+            <div class="support-info">
+                <p>Don't remember password? <a href="Forgetpassword.html">forget password</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
