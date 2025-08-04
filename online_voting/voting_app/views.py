@@ -11,6 +11,10 @@ def overview(request):
   return render(request, 'overview.html')
 
 def login(request):
-  return render(request, 'Login@.html')
+  return render(request, 'login.html')
+
+def  form(request):
+  return render(request, 'form.html')
+
 
 # Create your views here.
