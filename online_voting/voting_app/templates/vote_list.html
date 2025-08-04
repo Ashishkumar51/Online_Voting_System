@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Heading -->
+<div class="d-flex align-items-center justify-content-between text-white mt-4 px-4 py-3 mb-4 rounded shadow"
+     style="background-color: #2A2F5B;">
+  <h3 class="mb-0"><i class="fa fa-th-list me-2"></i>Vote List</h3>
+  <a href="{% url 'vote' %}" class="btn btn-warning text-dark fw-semibold shadow-sm">
+    <i class="fa-solid fa-circle-plus me-2"></i> Add Vote
+  </a>
+</div>
+
+<!-- Search & Export Controls -->
+<div class="row g-3 mb-4 align-items-center">
+  <div class="col-md-6 col-lg-4">
+    <div class="input-group shadow-sm">
+      <span class="input-group-text bg-white border-end-0"><i class="fa fa-search"></i></span>
+      <input type="text" id="searchVote" class="form-control border-start-0" placeholder="Search voter or candidate">
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-4 p-2">
+    <select id="rowsPerPage" class="form-select shadow-sm">
+      <option value="5">5 rows</option>
+      <option value="10" selected>10 rows</option>
+      <option value="25">25 rows</option>
+      <option value="50">50 rows</option>
+    </select>
+  </div>
+  <div class="col-md-6 col-lg-4 text-end">
+    <div class="dropdown">
+      <button class="btn btn-outline-primary dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
+        <i class="fa fa-download me-2"></i>Export
+      </button>
+      <ul class="dropdown-menu mt-1">
+        <li><a class="dropdown-item" href="#" onclick="exportToPDF()"><i class="fa fa-file-pdf-o text-danger me-2"></i>Export to PDF</a></li>
+        <li><a class="dropdown-item" href="#" onclick="exportToExcel()"><i class="fa fa-file-excel-o text-success me-2"></i>Export to Excel</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-responsive rounded shadow-sm">
+  <table class="table table-bordered table-hover bg-white align-middle text-nowrap" id="voteTable" style="font-size: 0.98rem;">
+    <thead class="text-center text-white" style="background-color: #003366;">
+      <tr>
+        <th>S.No.</th>
+        <th>Voter</th>
+        <th>Candidate</th>
+        <th>Party</th>
+        <th>Election</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="voteTableBody">
+      <!-- JS will render votes here -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Vote pagination" class="mt-4">
+  <ul class="pagination justify-content-center mb-0" id="pagination">
+    <!-- JS renders pagination -->
+  </ul>
+</nav>
+
+<script>
+  let votes = [];
+  let filteredVotes = [];
+  let currentPage = 1;
+  let rowsPerPage = 10;
+
+  async function fetchVotes() {
+    try {
+      const response = await fetch("/api/votes/", {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      votes = Array.isArray(data) ? data : [];
+      filteredVotes = [...votes];
+      updateVoteTable();
+    } catch (error) {
+      console.error("Error fetching votes:", error);
+    }
+  }
+
+  function renderVoteTable() {
+    const tbody = document.getElementById("voteTableBody");
+    tbody.innerHTML = "";
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = filteredVotes.slice(start, end);
+
+    if (pageData.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No votes found.</td></tr>`;
+      return;
+    }
+
+    pageData.forEach((vote, index) => {
+      const party = vote.party || 'Independent';
+      const election = vote.election || 'N/A';
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="text-center">${start + index + 1}</td>
+          <td>${vote.voter}</td>
+          <td>${vote.candidate}</td>
+          <td>${party}</td>
+          <td>${election}</td>
+          <td class="text-center">
+            <a href="#" class="btn btn-sm btn-primary me-1 disabled"><i class="fa fa-pencil"></i></a>
+            <a href="#" class="btn btn-sm btn-danger disabled"><i class="fa fa-trash"></i></a>
+          </td>
+        </tr>`;
+    });
+  }
+
+  function renderPagination() {
+    const pagination = document.getElementById("pagination");
+    pagination.innerHTML = "";
+    const totalPages = Math.ceil(filteredVotes.length / rowsPerPage);
+    if (totalPages <= 1) return;
+
+    pagination.innerHTML += `
+      <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+      </li>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+      pagination.innerHTML += `
+        <li class="page-item ${i === currentPage ? 'active' : ''}">
+          <a class="page-link" href="#" data-page="${i}">${i}</a>
+        </li>`;
+    }
+
+    pagination.innerHTML += `
+      <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+      </li>`;
+  }
+
+  function updateVoteTable() {
+    renderVoteTable();
+    renderPagination();
+  }
+
+  document.getElementById("searchVote").addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+    filteredVotes = votes.filter(v =>
+      v.voter?.toLowerCase().includes(query) ||
+      v.candidate?.toLowerCase().includes(query)
+    );
+    currentPage = 1;
+    updateVoteTable();
+  });
+
+  document.getElementById("rowsPerPage").addEventListener("change", function () {
+    rowsPerPage = parseInt(this.value);
+    currentPage = 1;
+    updateVoteTable();
+  });
+
+  document.getElementById("pagination").addEventListener("click", function (e) {
+    if (e.target.tagName === "A") {
+      e.preventDefault();
+      const page = parseInt(e.target.getAttribute("data-page"));
+      const totalPages = Math.ceil(filteredVotes.length / rowsPerPage);
+      if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        updateVoteTable();
+      }
+    }
+  });
+
+  function exportToPDF() {
+    alert("PDF export not implemented.");
+  }
+
+  function exportToExcel() {
+    alert("Excel export not implemented.");
+  }
+
+  // Load votes
+  fetchVotes();
+</script>
+{% endblock %}

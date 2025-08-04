@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Page Title and Add Button -->
+<div class="d-flex align-items-center justify-content-between text-white mt-4 px-4 py-3 mb-4 rounded shadow"
+  style="background-color: #2A2F5B;">
+  <h3 class="mb-0 letter-spacing-1 text-white">
+    <i class="fa fa-users me-2"></i>&nbsp;Party List
+  </h3>
+  <a href="{% url 'parties' %}" class="btn btn-lg btn-warning text-dark fw-semibold shadow-sm d-flex align-items-center">
+    <i class="fa-solid fa-circle-plus me-2"></i>&nbsp;&nbsp;Add Party
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="row g-3 mb-4 align-items-center">
+  <div class="col-md-6 col-lg-4">
+    <div class="input-group shadow-sm">
+      <span class="input-group-text bg-white border-end-0"><i class="fa fa-search"></i></span>
+      <input type="text" id="searchParty" class="form-control border-start-0" placeholder="Search by party name">
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-4 p-2">
+    <select id="rowsPerPage" class="form-select shadow-sm p-1 rounded-5">
+      <option value="5">5 rows</option>
+      <option value="10" selected>10 rows</option>
+      <option value="25">25 rows</option>
+      <option value="50">50 rows</option>
+    </select>
+  </div>
+</div>
+
+<!-- Party Table -->
+<div class="table-responsive rounded shadow-sm">
+  <table class="table table-bordered table-hover bg-white align-middle text-nowrap" id="partyTable" style="font-size: 0.98rem;">
+    <thead class="table text-center align-middle" style="background-color: blue; color: white;">
+      <tr>
+        <th>SNo.</th>
+        <th>Name</th>
+        <th>Symbol</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="partyTableBody">
+      <!-- Filled dynamically -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Page navigation" class="position-sticky bottom-0 bg-white mt-4 p-4 py-2 z-3 rounded shadow-sm">
+  <ul class="pagination justify-content-center mb-0" id="pagination">
+    <!-- Pagination injected dynamically -->
+  </ul>
+</nav>
+
+<script>
+  let parties = [];
+  let filteredParties = [];
+  let currentPage = 1;
+  let rowsPerPage = 10;
+
+  async function fetchParties() {
+    try {
+      const res = await fetch('/api/parties/');
+      if (!res.ok) throw new Error('Failed to load data');
+      parties = await res.json();
+      filteredParties = [...parties];
+      updatePartyTable();
+    } catch (err) {
+      alert("Failed to load parties.");
+    }
+  }
+
+  function renderPartyTable() {
+    const tbody = document.getElementById('partyTableBody');
+    tbody.innerHTML = '';
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = filteredParties.slice(start, end);
+
+    pageData.forEach((party, idx) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${start + idx + 1}</td>
+          <td>${party.name}</td>
+          <td class="text-center">
+            ${party.logo ? `<img src="${party.logo}" alt="${party.name} logo" height="40">` : '—'}
+          </td>
+          <td class="text-center">
+            <a href="#" class="btn btn-sm btn-primary me-1"><i class="fa fa-pencil"></i></a>
+            <a href="#" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    const totalPages = Math.ceil(filteredParties.length / rowsPerPage);
+    const disabledPrev = currentPage === 1 ? 'disabled' : '';
+    const disabledNext = currentPage === totalPages ? 'disabled' : '';
+
+    pagination.innerHTML += `<li class="page-item ${disabledPrev}"><a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a></li>`;
+    for (let i = 1; i <= totalPages; i++) {
+      const active = currentPage === i ? 'active' : '';
+      pagination.innerHTML += `<li class="page-item ${active}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+    }
+    pagination.innerHTML += `<li class="page-item ${disabledNext}"><a class="page-link" href="#" data-page="${currentPage + 1}">Next</a></li>`;
+  }
+
+  function updatePartyTable() {
+    renderPartyTable();
+    renderPagination();
+  }
+
+  // Search
+  document.getElementById('searchParty').addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    filteredParties = parties.filter(p =>
+      p.name.toLowerCase().includes(q)
+    );
+    currentPage = 1;
+    updatePartyTable();
+  });
+
+  // Rows per page
+  document.getElementById('rowsPerPage').addEventListener('change', function () {
+    rowsPerPage = parseInt(this.value);
+    currentPage = 1;
+    updatePartyTable();
+  });
+
+  // Pagination
+  document.getElementById('pagination').addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') {
+      e.preventDefault();
+      const page = parseInt(e.target.getAttribute('data-page'));
+      const totalPages = Math.ceil(filteredParties.length / rowsPerPage);
+      if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        updatePartyTable();
+      }
+    }
+  });
+
+  // Initial Load
+  fetchParties();
+</script>
+{% endblock %}

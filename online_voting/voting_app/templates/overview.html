@@ -1,143 +1,239 @@
+
 {% extends "base.html" %}
 {% load static %}
-
-{% block title %}Voting Dashboard{% endblock %}
-
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-<section class="overview" id="dashboard">
-    <h2><i class="fa-solid fa-earth-asia" style="color: white;"></i> Overview</h2>
-    <p style="color: rgb(11, 210, 11); margin-top: 5px; font-size: 26px;"><b>Welcome to VotingGo</b></p>
-    <p style="color: rgb(110, 179, 184); margin-top: 5px; font-size: 16px;"><b>Hello, Ashish, how is there!</b></p>
+    <style>
+        body {
+            background: #f0f2f5;
+        }
 
+        .election-card {
+            transition: all 0.3s ease;
+            border: none;
+            overflow: hidden;
+            background: white;
+        }
 
-    <!-- Graph Section -->
-    <section class="dashboard-graphs">
-        <div class="graph-section" style="display: flex; gap: 30px;">
-            <div class="graph" style="width: 100%;">
-                <canvas id="profileBarChart"></canvas>
+        .election-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .election-header {
+            background: linear-gradient(135deg,#293E5C);
+            color: rgb(255, 255, 255);
+            padding: 20px;
+        }
+
+        .candidate-card {
+            border: 2px solid #eef0f2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            background: white;
+        }
+
+        .candidate-card:hover,
+        .candidate-card.active {
+            border-color: #2ecc71;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.2);
+            background: #f8fff9;
+        }
+
+        .vote-btn {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            border: none;
+            color: white;
+        }
+
+        .vote-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+        }
+
+        .welcome-header {
+            background: linear-gradient(135deg, #1B2838 0%, #2A3F5F 100%);
+            padding: 20px 0;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .candidate-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .candidate-info {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+
+    <div class="container my-5">
+        <div class="welcome-header text-center">
+            <h2 class="fw-bold mb-3 bg-info rounded-0 text-dark">Welcome to the Online Voting Portal</h2>
+            <p class="text-light mb-0">Participate in live elections and make your voice count</p>
+        </div>
+
+        <div id="electionList" class="row g-4">
+            <div class="spinner w-100" id="loading">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
-            <div class="pie-chart" style="width: 100%;">
-                <canvas id="profileDonutChart"></canvas>
-            </div>
-        </div>
-    </section>
-
-    <!-- Vote Count Boxes -->
-    <div class="vote-section" style="display: flex; gap: 20px; margin-top: 30px;">
-        <div class="vote-count" style="background-color: #ff990b; padding: 20px; color: white;">
-            <h1><i class="fa-solid fa-users-line"></i> 120.00</h1>
-            <p>User 1</p>
-        </div>
-        <div class="vote-count completed" style="background-color: #ee1c75; padding: 20px; color: white;">
-            <h1><i class="fa-solid fa-users-line" style="color: #87053b;"></i> 200.00</h1>
-            <p>User 2</p>
-        </div>
-        <div class="vote-count verified-voters" style="background-color:#28a745; padding: 20px; color: white;">
-            <h1><i class="fa-solid fa-users-line" style="color: #085f1d;"></i> 150.00</h1>
-            <p>User 3</p>
-        </div>
-        <div class="vote-count verified-voters" style="background-color:#06d1d1; padding: 20px; color: white;">
-            <h1><i class="fa-solid fa-users-line" style="color: #046d6d;"></i> 80.00</h1>
-            <p>User 4</p>
         </div>
     </div>
-</section>
 
+    <script>
+        const voterId = 1; // Should be dynamically assigned for the actual logged-in user
+        const selectedVotes = {};
 
-<script>
-    // Load Graphs on page load
-    window.addEventListener('DOMContentLoaded', () => {
-        loadGraphs();
-    });
+        async function fetchElections() {
+            const res = await fetch('/api/elections/');
+            const elections = await res.json();
+            const container = document.getElementById('electionList');
+            const data = elections.results || elections;
 
-    function loadGraphs() {
-        // Bar Chart
-        const ctxBar = document.getElementById('profileBarChart').getContext('2d');
-        new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: ['User A', 'User B', 'User C', 'User D'],
-                datasets: [{
-                    label: 'Profile Views',
-                    data: [120, 200, 150, 80],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.6)',
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(54, 162, 235, 0.6)',
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(54, 162, 235, 1)',
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Profile Views Analysis',
-                    },
-                    legend: {
-                        display: true,
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+            container.innerHTML = '';
+
+            for (let election of data) {
+                const card = document.createElement('div');
+                card.className = 'col-lg-6 mb-4';
+
+                card.innerHTML = `
+                    <div class="election-card shadow">
+                        <div class="election-header">
+                            <h4 class="card-title mb-2">${election.title}</h4>
+                            <p class="card-text mb-0 opacity-75">${election.description || 'No description available.'}</p>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="candidates-wrapper" id="candidates-${election.id}"></div>
+                            <button class="btn vote-btn mt-4" id="vote-btn-${election.id}" onclick="submitVote(${election.id})">
+                                <i class="fa-solid fa-check me-2"></i> Cast Your Vote
+                            </button>
+                        </div>
+                    </div>`;
+
+                container.appendChild(card);
+                await fetchCandidates(election.id);
             }
+        }
+
+        async function fetchCandidates(electionId) {
+            const res = await fetch('/api/candidates/');
+            const data = await res.json();
+            const candidates = data.results || data;
+
+            const filtered = candidates.filter(c => c.election == electionId);
+            const container = document.getElementById(`candidates-${electionId}`);
+            container.innerHTML = '';
+
+            filtered.forEach(candidate => {
+                const div = document.createElement('div');
+                div.className = 'candidate-card p-3';
+                div.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <img src="https://ui-avatars.com/api/?name=${candidate.name}&background=0D8ABC&color=fff" 
+                                 class="candidate-avatar me-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-2 fw-bold">${candidate.name}</h6>
+                            <span class="candidate-info">
+                                <i class="fas fa-user-tie me-2"></i>
+                                ${candidate.party_name || 'Independent'}
+                            </span>
+                        </div>
+                        <div class="check-icon text-success" style="display: none;">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>`;
+
+                div.addEventListener('click', () => {
+                    document.querySelectorAll(`#candidates-${electionId} .candidate-card`).forEach(card => {
+                        card.classList.remove('active');
+                        card.querySelector('.check-icon').style.display = 'none';
+                    });
+                    div.classList.add('active');
+                    div.querySelector('.check-icon').style.display = 'block';
+                    selectedVotes[electionId] = candidate.id;
+                    document.getElementById(`vote-btn-${electionId}`).style.display = 'block';
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+            async function submitVote(electionId) {
+      const candidateId = selectedVotes[electionId];
+
+      if (!candidateId) {
+        Swal.fire('No Candidate Selected', 'Please select a candidate before voting.', 'warning');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/votes/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            voter: voterId,
+            election: electionId,
+            candidate: candidateId
+          })
         });
 
-        // Donut Chart
-        const ctxDonut = document.getElementById('profileDonutChart').getContext('2d');
-        new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Active Users', 'Inactive Users', 'New Users', 'Returning Users'],
-                datasets: [{
-                    label: 'User Types',
-                    data: [300, 50, 100, 150],
-                    backgroundColor: ['#4CAF50', '#FFC107', '#FF6384', '#36A2EB'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'User Type Distribution',
-                    },
-                    legend: {
-                        display: true,
-                    }
-                }
-            }
-        });
+        const result = await res.json();
+
+        if (res.ok) {
+          confetti({
+            particleCount: 150,
+            spread: 90,
+            origin: { y: 0.6 }
+          });
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Vote Submitted!',
+            text: result.message || 'Your vote has been recorded.',
+            timer: 2500,
+            showConfirmButton: false
+          });
+
+          document.getElementById(`vote-btn-${electionId}`).disabled = true;
+        } else {
+          Swal.fire('Error', result.error || 'You have already voted.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'An error occurred while submitting vote.', 'error');
+      }
     }
 
-    // Optional dropdown handler (if dropdown exists)
-    const dropdown = document.getElementById('dropdown');
-    if (dropdown) {
-        dropdown.addEventListener('click', function (e) {
-            document.querySelector('.dropdown-content').style.display = 'block';
-            e.stopPropagation();
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!dropdown.contains(e.target)) {
-                document.querySelector('.dropdown-content').style.display = 'none';
-            }
-        });
-    }
-</script>
+    fetchElections();
+    </script>
 {% endblock %}
+

@@ -1,49 +1,57 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
-from django.contrib.auth.models import User
+from django.db.models import Count
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.utils import timezone
 
 class Party(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    symbol = models.ImageField(upload_to='party_symbols/', null=True, blank=True)
+    name = models.CharField(max_length=100)
+    logo = models.ImageField(upload_to='party_logos/', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class Candidate(models.Model):
+    name = models.CharField(max_length=100)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    election = models.ForeignKey("Election", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name} ({self.party.name})"
+
+class Voter(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)  # NOTE: Simple password (no hashing)
 
     def __str__(self):
         return self.name
 
 class Election(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    title = models.CharField(max_length=100)
+    description = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField()
 
     def __str__(self):
-        return self.name
+        return self.title
 
-class Voter(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    age = models.PositiveIntegerField()
-    address = models.TextField()
-    verified = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.user.username
-
-class Candidate(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, null=True, blank=True)
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
-    vote_count = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        return f"{self.user.get_full_name()} ({self.party.name if self.party else 'Independent'})"
 
 class Vote(models.Model):
-    voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
-    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    voter = models.ForeignKey('Voter', on_delete=models.CASCADE)
+    candidate = models.ForeignKey('Candidate', on_delete=models.CASCADE)
+    election = models.ForeignKey('Election', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)  # ✅ Add this if missing
 
-    class Meta:
-        unique_together = ('voter', 'election')
+    def __str__(self):
+        return f"{self.voter} voted for {self.candidate} in {self.election}"
+    
+class ElectionResultView(APIView):
+    def get(self, request, election_id):
+        results = (
+            Candidate.objects
+            .filter(election_id=election_id)
+            .annotate(vote_count=Count('vote'))
+            .values('name', 'party__name', 'vote_count')
+        )
+        return Response(results)

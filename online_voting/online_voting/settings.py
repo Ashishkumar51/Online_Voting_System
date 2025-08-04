@@ -55,6 +55,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'online_voting.urls'
+# AUTH_USER_MODEL = 'voting_api_app.User'  # or the correct app name
+
 
 TEMPLATES = [
     {
@@ -89,8 +91,8 @@ DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.mysql',
 		'NAME': 'voting_system',
-		'USER': 'voting_admin',
-		'PASSWORD': 'voting@admin24',
+		'USER': 'voting',
+		'PASSWORD': 'voting@1234',
 		'HOST':'localhost',
 		'PORT':'3306',
 	}
@@ -140,8 +142,11 @@ STATIC_ROOT = BASE_DIR / 'static'
 # LOGIN_REDIRECT_URL = 'dashboard'  # Where to redirect after login
 # end
 # media path url
+
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # optional, for production collectstatic
+
 
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -192,6 +197,9 @@ REST_FRAMEWORK = {
         'anon': '100/day',
         'user': '1000/day',
     },
+        'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
 
     # 'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }

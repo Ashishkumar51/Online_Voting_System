@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Heading -->
+<div class="d-flex align-items-center justify-content-between text-white p-3 rounded mb-4"
+  style="background-color: #2a2f5b;">
+  <h4 class="mb-0 text-white">Add New Party</h4>
+  <a href="{% url 'parties_list' %}" class="btn text-dark fw-semibold" style="background-color: #FFC107;">
+    <i class="fa-solid fa-circle-arrow-left me-2"></i>Back
+  </a>
+</div>
+
+<!-- Party Form -->
+<form id="partyForm" enctype="multipart/form-data">
+  <div class="mt-4 bg-white shadow p-4 rounded">
+    <h4 class="mb-3 px-2 rounded">Party Information</h4>
+    <hr>
+    <div class="row">
+      <div class="col-lg-6 mb-3">
+        <label for="party_name" class="form-label">Party Name <span style="color: red;">*</span></label>
+        <input type="text" id="party_name" class="form-control" placeholder="Enter Party Name" required>
+        <div class="invalid-feedback">Party name is required</div>
+      </div>
+
+      <div class="col-lg-6 mb-3">
+        <label for="party_logo" class="form-label">Party Symbol/Logo</label>
+        <input type="file" id="party_logo" class="form-control" accept="image/*">
+        <div class="form-text">Upload symbol/logo (optional)</div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3">
+      <button type="submit" id="submit" class="btn btn-primary me-2">Submit</button>
+      <button type="button" class="btn btn-warning" onclick="clearPartyForm()">Clear</button>
+    </div>
+  </div>
+</form>
+
+<script>
+  function clearPartyForm() {
+    document.getElementById("partyForm").reset();
+  }
+
+  document.getElementById("partyForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById("party_name").value.trim();
+    const logo = document.getElementById("party_logo").files[0];
+
+    if (!name) {
+      alert("Party name is required.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    if (logo) {
+      formData.append("logo", logo);
+    }
+
+    fetch("/api/parties/", {
+      method: "POST",
+      body: formData,
+    })
+    .then(response => {
+      if (response.ok) {
+        alert("Party created successfully!");
+        window.location.href = "{% url 'parties_list' %}";
+      } else {
+        return response.json().then(data => {
+          throw new Error(data.detail || "Failed to create party.");
+        });
+      }
+    })
+    .catch(error => {
+      alert("Error: " + error.message);
+      console.error("Error:", error);
+    });
+  });
+</script>
+
+{% endblock content %}

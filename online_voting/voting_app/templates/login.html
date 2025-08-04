@@ -1,14 +1,12 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vote Management System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vote Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
     <style>
         * {
             margin: 0;
@@ -28,6 +26,7 @@
 
         .container {
             display: flex;
+            scale: 0.95;
             flex-direction: row;
             width: 75%;
             background-color: rgb(255, 255, 255);
@@ -284,37 +283,117 @@
 </head>
 
 <body>
-    <img src="{% static 'image/12.jpg' %}" alt="" class="back_g">
-    <div class="container">
-        <div class="left-side">
-            <img src="{% static 'image/21.jpg' %}" alt=""  >
-        </div>
-        <div class="right-side">
-            <h4>VOTING MANAGEMENT SYSTEM</h4>
-            <h1>Login</h1>
-            <p>Create an account to participate in voting</p>
-            <form action="">
-                <div class="input-group">
-                    <i class="fa-solid fa-envelope" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Enter your Email">
-                </div>
-                <br>
-                <div class="input-group">
-                    <i class="fa-solid fa-lock" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password">
-                </div>
-                <div class="action-buttons">
-                    <button type="button" class="login-btn" onclick="window.location.href='{% url 'dashboard' %}'">Login</button>
-                    <button type="button" class="signup-btn" onclick="window.location.href='signup.html'">Sign Up</button>
-                </div>
-            </form>
-            <div class="support-info">
-                <p>Don't remember password? <a href="Forgetpassword.html">forget password</a></p>
-            </div>
-        </div>
+  <img src="{% static 'image/12.jpg' %}" alt="" class="back_g" />
+  <div class="container">
+    <div class="left-side">
+      <img src="{% static 'image/21.jpg' %}" alt="" />
     </div>
-</body>
+    <div class="right-side">
+      <h4>VOTING MANAGEMENT SYSTEM</h4>
+      <h1 id="form-title">Login</h1>
+      <p>Create an account to participate in voting</p>
 
+      <!-- LOGIN FORM -->
+      <form id="login-form">
+        <div class="input-group">
+          <i class="fa-solid fa-envelope" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your Email" required />
+        </div>
+        <br />
+        <div class="input-group">
+          <i class="fa-solid fa-lock" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required />
+        </div>
+        <div class="action-buttons">
+          <button type="submit" class="login-btn">Login</button>
+          <button type="button" class="signup-btn" onclick="toggleForm()">Sign Up</button>
+        </div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="register-form" style="display: none;">
+        <div class="input-group">
+            <i class="fa-solid fa-user" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+            <input type="text" id="reg-username" required placeholder="Choose a username" />
+        </div>
+        <div class="input-group">
+            <i class="fa-solid fa-envelope" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+            <input type="email" id="reg-email" required placeholder="Enter your Email" />
+        </div>
+        <div class="input-group">
+            <i class="fa-solid fa-lock" style="position: absolute; top: 32%; left: 1.2%; font-size: 22px; color: grey;"></i>
+            <input type="password" id="reg-password" required placeholder="Choose a password" />
+        </div>
+        <div class="action-buttons">
+          <button type="button" class="signup-btn" onclick="register()">Register</button>
+          <button type="button" class="login-btn" onclick="toggleForm()">Back to Login</button>
+        </div>
+      </form>
+
+      <div class="support-info">
+        <p>Don't remember password? <a href="">Forget password</a></p>
+      </div>
+      <div id="message" style="margin-top: 10px; text-align: center; color: red;"></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleForm() {
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const title = document.getElementById('form-title');
+      const message = document.getElementById('message');
+
+      loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+      registerForm.style.display = registerForm.style.display === 'block' ? 'none' : 'block';
+      title.textContent = loginForm.style.display === 'none' ? 'Register' : 'Login';
+      message.textContent = "";
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const response = await fetch('http://127.0.0.1:8000/api/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      document.getElementById('message').textContent = data.msg;
+
+      if (response.status === 200) {
+        // Redirect to dashboard or success page
+        window.location.href = "{% url 'dashboard' %}";
+      } 
+      else {
+        document.getElementById('message').textContent = data.error || "Login failed. Please check your credentials.";
+      }
+
+    });
+
+    async function register() {
+      const name = document.getElementById('reg-username').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+
+      const response = await fetch('http://127.0.0.1:8000/api/register/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json();
+      document.getElementById('message').textContent = data.msg || "Check input errors.";
+
+      if (response.status === 201) {
+        toggleForm(); // go back to login
+      }
+    }
+  </script>
+</body>
 </html>

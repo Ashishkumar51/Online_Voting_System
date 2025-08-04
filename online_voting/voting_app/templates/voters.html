@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- dashboard inner -->
+<section class="container-fluid">
+  <div class="p-4 mt-4">
+    <!-- heading section -->
+    <div class="d-flex align-items-center justify-content-between text-white p-3 rounded mb-4"
+      style="background-color: #2a2f5b;">
+      <h4 class="mb-0 text-white">Add Voter</h4>
+      <a href="{% url 'voters_list' %}" class="btn text-dark fw-semibold" style="background-color: #FFC107;">
+        <i class="fa-solid fa-circle-arrow-left me-2"></i>Back
+      </a>
+    </div>
+    <!-- end heading section -->
+
+    <!-- Voter Form -->
+    <form id="voterForm">
+      <div class="mt-4 bg-white shadow p-4 rounded">
+        <div class="d-flex justify-content-between">
+          <h4 class="mb-0 px-2 rounded">Voter Information</h4>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <label for="name" class="form-label">Voter Name <span style="color: red;">*</span></label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="Voter Name" required>
+            <div class="invalid-feedback" id="nameError"></div>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <label for="email" class="form-label">Email <span style="color: red;">*</span></label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+            <div class="invalid-feedback" id="emailError"></div>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <label for="password" class="form-label">Password <span style="color: red;">*</span></label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+            <div class="invalid-feedback" id="passwordError"></div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+          <button type="submit" id="submit" class="btn btn-primary me-2">Submit</button>
+          <button type="button" class="btn btn-warning" onclick="clearVoterForm()">Clear</button>
+        </div>
+      </div>
+    </form>
+
+    <script>
+      function clearVoterForm() {
+        document.getElementById("voterForm").reset();
+      }
+
+      document.getElementById("voterForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value
+        };
+
+        try {
+          const response = await fetch("/api/voters/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            alert("Voter added successfully!");
+            clearVoterForm();
+          } else {
+            document.getElementById("nameError").innerText = data.name || "";
+            document.getElementById("emailError").innerText = data.email || "";
+            document.getElementById("passwordError").innerText = data.password || "";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("An error occurred while submitting the form.");
+        }
+      });
+    </script>
+  </div>
+</section>
+<!-- end dashboard inner -->
+{% endblock content %}

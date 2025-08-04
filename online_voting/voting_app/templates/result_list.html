@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Heading -->
+<div class="d-flex align-items-center justify-content-between text-white mt-4 px-4 py-3 mb-4 rounded shadow"
+  style="background-color: #2A2F5B;">
+  <h3 class="mb-0 letter-spacing-1 text-white"><i class="fa fa-chart-bar me-2"></i>&nbsp;Election Results</h3>
+  <div class="dropdown">
+    <button class="btn btn-lg btn-warning text-dark fw-semibold shadow-sm d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+      <i class="fa fa-download me-2"></i>&nbsp;&nbsp;Export
+    </button>
+    <ul class="dropdown-menu mt-1">
+      <li><a class="dropdown-item" href="#" onclick="exportToPDF()"><i class="fa fa-file-pdf-o text-danger me-2"></i>Export to PDF</a></li>
+      <li><a class="dropdown-item" href="#" onclick="exportToExcel()"><i class="fa fa-file-excel-o text-success me-2"></i>Export to Excel</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Search & Controls -->
+<div class="row g-3 mb-4 align-items-center">
+  <div class="col-md-6 col-lg-4">
+    <div class="input-group shadow-sm">
+      <span class="input-group-text bg-white border-end-0"><i class="fa fa-search"></i></span>
+      <input type="text" id="searchResult" class="form-control border-start-0" placeholder="Search election or candidate">
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <select id="rowsPerPage" class="form-select shadow-sm p-1 rounded-5">
+      <option value="5">5 rows</option>
+      <option value="10" selected>10 rows</option>
+      <option value="25">25 rows</option>
+      <option value="50">50 rows</option>
+    </select>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-responsive rounded shadow-sm">
+  <table id="resultTable" class="table table-bordered table-hover bg-white align-middle text-nowrap" style="font-size: 0.98rem;">
+    <thead class="table text-center align-middle" style="background-color: blue; color: white;">
+      <tr>
+        <th>SNo.</th>
+        <th>Election</th>
+        <th>Candidate</th>
+        <th>Party</th>
+        <th>Total Votes</th>
+      </tr>
+    </thead>
+    <tbody id="resultTableBody">
+      <!-- JS will populate this -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Results navigation" class="position-sticky bottom-0 bg-white mt-4 p-4 py-2 z-3 rounded shadow-sm">
+  <ul class="pagination justify-content-center mb-0" id="pagination">
+    <!-- JS will populate this -->
+  </ul>
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+  let currentPage = 1;
+  let rowsPerPage = 10;
+  let allResults = [];
+  let filteredResults = [];
+
+  async function fetchResults() {
+    try {
+      const response = await fetch("/api/results/");
+      const data = await response.json();
+      
+      allResults = [];
+      let sno = 1;
+      
+      data.forEach(election => {
+      election.candidates.forEach(candidate => {
+        allResults.push({
+        sno: sno++,
+        election_title: election.election_title,
+        candidate_name: candidate.candidate_name,
+        party: candidate.party_name || candidate.party || 'No Party', // Added fallback
+        total_votes: candidate.total_votes
+        });
+      });
+      });
+
+      filteredResults = [...allResults];
+      updateResultsTable();
+
+    } catch (err) {
+      console.error("Failed to load election results:", err);
+      document.getElementById('resultTableBody').innerHTML = `
+      <tr><td colspan="5" class="text-center text-danger">Unable to load results.</td></tr>`;
+    }
+  }
+
+
+  function renderResultsTable() {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = filteredResults.slice(start, end);
+    
+    const tbody = document.getElementById("resultTableBody");
+    tbody.innerHTML = pageData.map(result => `
+      <tr class="text-center">
+        <td>${result.sno}</td>
+        <td>${result.election_title}</td>
+        <td>${result.candidate_name}</td>
+        <td>${result.party}</td>
+        <td><span class="fw-bold text-primary">${result.total_votes}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function renderPagination() {
+    const pagination = document.getElementById("pagination");
+    const totalPages = Math.ceil(filteredResults.length / rowsPerPage);
+    
+    pagination.innerHTML = `
+      <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+        <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+      </li>
+      ${Array.from({length: totalPages}, (_, i) => i + 1).map(i => `
+        <li class="page-item ${i === currentPage ? "active" : ""}">
+          <a class="page-link" href="#" data-page="${i}">${i}</a>
+        </li>
+      `).join('')}
+      <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+        <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+      </li>
+    `;
+  }
+
+  function updateResultsTable() {
+    renderResultsTable();
+    renderPagination();
+  }
+
+  // Event Listeners
+  document.getElementById("searchResult").addEventListener("input", function() {
+    const query = this.value.toLowerCase();
+    filteredResults = allResults.filter(r => 
+      r.election_title.toLowerCase().includes(query) ||
+      r.candidate_name.toLowerCase().includes(query)
+    );
+    currentPage = 1;
+    updateResultsTable();
+  });
+
+  document.getElementById("rowsPerPage").addEventListener("change", function() {
+    rowsPerPage = parseInt(this.value);
+    currentPage = 1;
+    updateResultsTable();
+  });
+
+  document.getElementById("pagination").addEventListener("click", function(e) {
+    if (e.target.tagName === "A") {
+      e.preventDefault();
+      const page = parseInt(e.target.getAttribute("data-page"));
+      const totalPages = Math.ceil(filteredResults.length / rowsPerPage);
+      if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        updateResultsTable();
+      }
+    }
+  });
+
+  function exportToPDF() {
+    alert("PDF export not implemented.");
+  }
+
+  function exportToExcel() {
+    alert("Excel export not implemented.");
+  }
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", fetchResults);
+</script>
+
+{% endblock content %}

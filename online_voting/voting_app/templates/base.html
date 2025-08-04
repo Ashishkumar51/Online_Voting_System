@@ -7,6 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voting Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <!-- ✅ Add Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Optional: Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -416,54 +424,138 @@
     <!-- Sidebar -->
     <div>
         <section class="sc">
-            <h2><img class="icon" src="{% static 'image/logo.png' %}" alt="VotingGO Logo">VotingGO</h2>
+          <h2><img class="icon" src="{% static 'image/logo.png' %}" alt="VotingGO Logo">VotingGO</h2>
+          <nav>
             <ul>
-                <li>
-                    <i class="fa-solid fa-earth-asia"></i><a href="{% url 'dashboard' %}">Dashboard</a>
-                </li>
+              <li><i class="fa-solid fa-earth-asia"></i><a href="{% url 'dashboard' %}">Dashboard</a></li>
             </ul>
             <ul>
-                <li>
-                  <i class="fa-solid fa-rectangle-list"></i><a href="{% url 'overview' %}">Overview</a>
-                </li>
+              <li><i class="fa-solid fa-rectangle-list"></i><a href="{% url 'overview' %}">Live Voting</a></li>
             </ul>
             <ul>
-                <li onclick="replaceDivWithExternalcontent2(event)"><i class="fa-solid fa-gears"></i><a>Registration</a>
-                </li>
+              <li><i class="fa-solid fa-square-poll-vertical"></i><a href="{% url 'elections_list' %}">Election</a></li>
             </ul>
             <ul>
-                <li><i class="fa-solid fa-square-poll-vertical"></i><a href="electiontable.html">Election</a></li>
+              <li><i class="fa-solid fa-inbox"></i><a href="{% url 'candidates_list' %}">Candidates</a></li>
             </ul>
             <ul>
-                <li><i class="fa-solid fa-inbox"></i><a href="voters.html">Candidates</a></li>
+              <li><i class="fa-solid fa-inbox"></i><a href="{% url 'parties_list' %}">Parties</a></li>
             </ul>
             <ul>
-                <li><i class="fa-solid fa-inbox"></i><a href="voters.html">Voters</a></li>
+              <li><i class="fa-solid fa-inbox"></i><a href="{% url 'voters_list' %}">Voters</a></li>
             </ul>
             <ul>
-                <li><i class="fa-solid fa-check-to-slot"></i><a href="Result.html">Results</a></li>
+              <li><i class="fa-solid fa-check-to-slot"></i><a href="{% url 'result_list' %}">Results</a></li>
             </ul>
             <ul>
-                <li><i class="fa-solid fa-inbox"></i><a href="votes.html">Votes</a></li>
+              <li><i class="fa-solid fa-inbox"></i><a href="{% url 'vote_list' %}">Votes</a></li>
             </ul>
+          </nav>
+          
+          <div class="sidebar-footer"></div>
             <div class="LOGOUT">
-                <p><i class="fa-solid fa-arrow-right-from-bracket" style="color: white; font-size: 1.1rem;"
-                        onclick=""></i>LOGOUT
-                </p>
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              <span>LOGOUT</span>
             </div>
-            <div style="display: flex; flex-direction: row;">
-                <p
-                    style="font-size: 15px; bottom: 25px; margin-top: 74px; margin-left: 8px; color: #00aeff; text-align: center;">
-                    Terms of Services</p>
-                <p
-                    style="font-size: 15px;  margin-top: 61px; margin-left: 5px; color: #00aeff; text-align: center; padding: 12px;">
-                    privacy policy</p>
+            
+            <div class="terms">
+              <a href="#">Terms of Services</a>
+              <a href="#">Privacy Policy</a>
             </div>
+          </div>
         </section>
 
-        {% block content %}
+        <style>
+        .sc {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          overflow-y: auto;
+          /* Hide scrollbar but keep functionality */
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        /* Hide scrollbar for Chrome/Safari/Opera */
+        .sc::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Add smooth scroll behavior */
+        .sc {
+          scroll-behavior: smooth;
+        }
+
+        .sc nav {
+          flex: 1;
+        }
+
+        .sc h2 {
+          padding: 15px;
+          white-space: nowrap;
+        }
+
+        .sc ul {
+          margin: 8px 15px;
+        }
+
+        .sc li {
+          padding: 10px 15px;
+        }
+
+        .sc i {
+          width: 20px;
+          text-align: center;
+        }
+
+        .sidebar-footer {
+          margin-top: auto;
+          padding: 15px;
+        }
+
+        .LOGOUT {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+          width: 80%;
+        }
+
+        .LOGOUT i {
+          margin-right: 8px;
+          color: white;
+        }
+
+        .terms {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 15px;
+        }
+
+        .terms a {
+          color: #00aeff;
+          font-size: 14px;
+          text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+          .sc h2 span,
+          .sc a span,
+          .LOGOUT span {
+            display: none;
+          }
           
-        {% endblock content %}
+          .sc {
+            width: 60px;
+          }
+          
+          .terms {
+            display: none;
+          }
+        }
+        </style>
 
         <!-- Topbar -->
         <section class="topbar">
@@ -503,7 +595,7 @@
                     style="background: #ffffff; padding: 8px; border-radius: 2px; display: flex; position: relative;padding-right: 0px; top: -5px; left: 20px;">
                     <i class="fa-solid fa-id-card-clip" style="color: #00aeff; justify-content: start;"></i>
                     <div style="position: relative; top: 2px; right: 5px;">
-                        <h4>My Profile</h4>
+                        <h6 style="font-size: 12px; font-weight: 600;">My Profile</h6>
                     </div><i class="fa-solid fa-caret-down" style="padding-left: 5px; color: #0d1d2d;"></i>
                 </div>
                 <div class="dropdown-content">
@@ -535,9 +627,17 @@
               </span>
             </span>
         </section>
+        
 
 
     </div>
+      <section class="container-fluid overview">
+
+        {% block content %}
+        
+        {% endblock content %}
+          
+      </section>
 
 </body>
 

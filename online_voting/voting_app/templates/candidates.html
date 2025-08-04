@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<!-- heading section  -->
+<div class="d-flex align-items-center justify-content-between text-white p-3 rounded mb-4"
+  style="background-color: #2a2f5b;">
+  <h4 class="mb-0 text-white">Candidate Form</h4>
+  <a href="{% url 'candidates_list' %}" class="btn text-dark fw-semibold" style="background-color: #FFC107;">
+    <i class="fa-solid fa-circle-arrow-left me-2"></i>Back
+  </a>
+</div>
+
+<!-- Candidate Form -->
+<form id="candidateForm">
+  <div class="mt-4 bg-white shadow p-4 rounded">
+    <div class="row">
+      <div class="col-lg-6 mb-3">
+        <label for="candidate_name" class="form-label">Candidate Name <span style="color: red;">*</span></label>
+        <input type="text" id="candidate_name" class="form-control" placeholder="Enter Candidate Name" required>
+        <div class="invalid-feedback"></div>
+      </div>
+      <div class="col-lg-6 mb-3">
+        <label for="party" class="form-label">Party <span style="color: red;">*</span></label>
+        <select id="party" class="form-control" required>
+          <option value="">Select Party</option>
+        </select>
+        <div class="invalid-feedback"></div>
+      </div>
+      <div class="col-lg-6 mb-3">
+        <label for="election" class="form-label">Election <span style="color: red;">*</span></label>
+        <select id="election" class="form-control" required>
+          <option value="">Select Election</option>
+        </select>
+        <div class="invalid-feedback"></div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3">
+      <button type="submit" class="btn btn-primary me-2">Submit</button>
+      <button type="button" class="btn btn-warning" onclick="clearCandidateForm()">Clear</button>
+    </div>
+  </div>
+</form>
+
+<script>
+  async function fetchParties() {
+    const res = await fetch("http://127.0.0.1:8000/api/parties/");
+    const data = await res.json();
+    const partySelect = document.getElementById("party");
+    data.forEach(item => {
+      partySelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+    });
+  }
+
+  async function fetchElections() {
+    const res = await fetch("http://127.0.0.1:8000/api/elections/");
+    const data = await res.json();
+    const electionSelect = document.getElementById("election");
+    data.forEach(item => {
+      electionSelect.innerHTML += `<option value="${item.id}">${item.title}</option>`;
+    });
+  }
+
+  document.getElementById("candidateForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const name = document.getElementById("candidate_name").value;
+    const party = document.getElementById("party").value;
+    const election = document.getElementById("election").value;
+
+    const response = await fetch("http://127.0.0.1:8000/api/candidates/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, party, election })
+    });
+
+    if (response.ok) {
+      alert("Candidate created successfully");
+      document.getElementById("candidateForm").reset();
+    } else {
+      alert("Error creating candidate");
+    }
+  });
+
+  function clearCandidateForm() {
+    document.getElementById("candidateForm").reset();
+  }
+
+  fetchParties();
+  fetchElections();
+</script>
+{% endblock content %}
