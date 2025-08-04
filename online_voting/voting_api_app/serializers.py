@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from voting_app.models import Voter, Candidate, Election, Vote
+from .models import Election, Candidate, Voter, Vote
 
-class VoterSerializer(serializers.ModelSerializer):
+class ElectionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Voter
+        model = Election
         fields = '__all__'
 
 class CandidateSerializer(serializers.ModelSerializer):
@@ -11,9 +11,9 @@ class CandidateSerializer(serializers.ModelSerializer):
         model = Candidate
         fields = '__all__'
 
-class ElectionSerializer(serializers.ModelSerializer):
+class VoterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Election
+        model = Voter
         fields = '__all__'
 
 class VoteSerializer(serializers.ModelSerializer):

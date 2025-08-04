@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'voting_app',  # Ensure your app is included here
     'voting_api_app',  # Ensure your API app is included here
     'rest_framework',  # If you're using Django REST Framework
+    'corsheaders',  # If you're using CORS headers
 ]
 
 MIDDLEWARE = [
@@ -50,16 +51,19 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # If you're using CORS headers
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True  # for dev only
 
 ROOT_URLCONF = 'online_voting.urls'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'your_db_name',
-        'USER': 'your_username',
-        'PASSWORD': 'your_password',
+        'NAME': 'voting_app',
+        'USER': 'ashish',
+        'PASSWORD': 'Ashish@12345',
         'HOST': 'localhost',
         'PORT': '3306',
     }
