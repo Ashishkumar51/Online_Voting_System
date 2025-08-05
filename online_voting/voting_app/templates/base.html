@@ -560,7 +560,7 @@
         <!-- Topbar -->
         <section class="topbar">
             <h3 style="font-size: 22px;">Lok Sabha Election 2024 (1st Phase)</h3>
-            <p id="demo" style="color: white; font-family: Arial, Helvetica, sans-serif; position: relative; "></p>
+            <p id="demo" style="color: white; font-family: Arial, Helvetica, sans-serif; position: relative; font-size: 18px; ">Live Time Loading.. </p>
             <script>
                 function showDateTime() {
                     // Create a new Date object
@@ -615,7 +615,7 @@
                         <a href=""><i class="fa-solid fa-moon" style=" color: #00aeff;"></i>Display & Accessibility</a>
                     </div>
                     <div style="display: flex; flex-direction: row; width: 100%;">
-                        <a href="login@.html"><i class="fa-solid fa-arrow-right-from-bracket"
+                        <a href="{% static 'login.html' %}"><i class="fa-solid fa-arrow-right-from-bracket"
                                 style=" color: #00aeff;"></i>LOGOUT</a>
                     </div>
                 </div>
@@ -623,7 +623,7 @@
             <span class="status">
               <i class="fa-regular fa-circle-check" style="color: #ffffff; margin-right: 5px;"></i>
               <span class="tick">
-                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'login' %}" style="text-decoration: none; color: #ffffff; font-size: medium;">Login</a>
               </span>
             </span>
         </section>
@@ -631,7 +631,7 @@
 
 
     </div>
-      <section class="container-fluid overview">
+      <section class="container-fluid overview h-100">
 
         {% block content %}
         

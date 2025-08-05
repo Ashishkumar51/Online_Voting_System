@@ -1,200 +1,232 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
 <title>Voting Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <h2><i class="fa-solid fa-earth-asia" style="color: white;"></i>Dashboard</h2>
-    <p style="color: rgb(11, 210, 11); margin-top: 5px;font-size: 26px;"><b>Welcome to VotingGo</b></p>
-    <p style="color: rgb(110, 179, 184); margin-top: 5px; font-size: 16px;"><b>Hello, Ashish how is there!</b>
-    </p>
 
-    <!-- Graph Section -->
-    <div class="graph-section">
-        <div class="graph">
-            <canvas id="votesByDay"></canvas>
-        </div>
-        <div class="pie-chart">
-            <canvas id="votesDistribution"></canvas>
+<style>
+    body {
+        background-color: #f0f2f5;
+    }
+
+    .stat-card {
+        color: white;
+        padding: 20px;
+        border-radius: 6px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease-in-out;
+    }
+    .stat-card h2{
+        background-color: white;
+    }
+    .stat-card i{
+        color: #1E2B3A;
+    }
+    .stat-card span{
+        color: #1E2B3A;
+    }
+
+    .stat-card:hover {
+        transform: scale(1.03);
+    }
+
+    .stat-card h5 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .stat-card p {
+        font-size: 26px;
+        font-weight: bold;
+    }
+
+    .chart-card {
+        background-color: white;
+        padding: 10px;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        height: 50%;
+    }
+
+    .chart-card canvas {
+        max-height: 100px;
+        width: 50% !important;
+    }
+
+    .election-card {
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid #00bcd4;
+        background-color: #ffffff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+</style>
+
+
+<!-- Header -->
+    <h2 style="background-color: #263546;"><i class="fa-solid fa-earth-asia" style="color: white; "></i>Dashboard</h2>
+    <p style="color: rgb(11, 210, 11); margin-top: 5px;font-size: 26px;"><b>Welcome to VotingGo</b></p>
+    <p style="color: rgb(0, 93, 99); margin-top: 5px; font-size: 16px;"><b>Hello, Ashish how is there!</b></p>
+
+<!-- Stat Cards -->
+<div class="row g-4 mt-3">
+    <div class="col-md-3">
+        <div class="stat-card" style="background-color: #ee1c75 !important">
+            <h2><i class="fa-solid fa-check-double me-2"></i><span id="totalVotes">--</span></h2>
+            <p>Total Votes</p>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-danger">
+            <h2><i class="fa-solid fa-users me-2 "></i><span id="totalVoters">--</span></h2>
+            <p>Registered Voters</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-success">
+            <h2><i class="fa-solid fa-circle-check me-2"></i><span id="verifiedVoters">--</span></h2>
+            <p>Verified Voters</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-warning text-dark">
+            <h2><i class="fa-solid fa-user-tie me-2"></i><span id="totalCandidates">--</span></h2>
+            <p style="color: #ffffff;">Candidates</p>
+        </div>
+    </div>
+</div>
 
-    <!-- Vote Count Boxes -->
-    <div class="vote-section">
-        <div class="vote-count">
-            <h1><i class="fa-regular fa-address-card"></i></i>5,58,684</h1><br>
-            <p>Votes</p>
+<!-- Charts -->
+<div class="row mt-5">
+    <div class="col-md-6">
+        <div class="chart-container">
+            <canvas id="votesByDay" height="200"></canvas>
         </div>
-        <div class="vote-count completed" style="background-color: #ee1c75;">
-            <h1><i class="fa-solid fa-users-line" style="color: #87053b"></i>1,11,114</h1><br>
-            <p>Voters</p>
+    </div>
+    <div class="col-md-6" style="scale: 0.75;">
+        <div class="chart-container">
+            <canvas id="votesDistribution" height="100" width="100"></canvas>
         </div>
-        <div class="vote-count verified-voters" style="background-color:#28a745">
-            <h1><i class="fa-solid fa-circle-check" style=" color: #085f1d;"></i>4,21,521</h1><br>
-            <p>Verified voters</p>
-        </div>
-        
+    </div>
+</div>
+
+<!-- Elections List -->
+<div class="container text-center mt-0"></div>
+    <h4 class="fw-bold mb-4 text-success" style="font-size: 1.5rem; color: #1E2B3A;">
+        Active Elections :- 
+    </h4>
+    <div class="row justify-content-center mt-1 gap-1 " id="electionsList" style="max-width: 1400px; margin: 0 auto;">
+        <!-- Elections will be dynamically populated here -->
+    </div>
+</div>
+
+<!-- Dynamic Script -->
 <script>
-    // Line Chart (Votes by Day)
-    var ctxLine = document.getElementById('votesByDay').getContext('2d');
-    var votesByDay = new Chart(ctxLine, {
-        type: 'line',
-        data: {
-            labels: ['11/27', '11/28', '11/29', '11/30', '12/01'],
-            datasets: [{
-                label: 'Votes by Day',
-                data: [25, 15, 10, 5, 3],
-                backgroundColor: 'rgba(58, 123, 213, 0.2)',
-                borderColor: 'rgba(58, 123, 213, 1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#3a7bd5',
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: '#ff6f61',
-                pointHoverBorderColor: '#ff6f61',
-                pointHitRadius: 12,
-                pointStyle: 'rectRounded'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 1500, // Slow animation duration (in milliseconds)
-                easing: 'easeInOutQuad', // Smooth easing function for a better effect
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/dashboard/");
+        const data = await res.json();
+
+        document.getElementById("totalVotes").textContent = data.votes.length;
+        document.getElementById("totalVoters").textContent = data.voters.length;
+        document.getElementById("verifiedVoters").textContent = data.voters.filter(v => v.verified).length;
+        document.getElementById("totalCandidates").textContent = data.candidates.length;
+
+        const voteCounts = {};
+        data.votes.forEach(v => {
+            voteCounts[v.candidate] = (voteCounts[v.candidate] || 0) + 1;
+        });
+
+        new Chart(document.getElementById('votesDistribution'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(voteCounts),
+                datasets: [{
+                    data: Object.values(voteCounts),
+                    backgroundColor: ['#4CAF50', '#ff9800', '#03a9f4', '#9c27b0', '#f44336']
+                }]
             },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Votes by Day Over Time',
-                    font: {
-                        size: 20,
-                        weight: 'bold',
-                        family: 'Arial, sans-serif'
-                    },
-                    color: '#3a3a3a',
-                    padding: {
-                        top: 20,
-                        bottom: 20
-                    }
-                },
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        color: '#3a7bd5',
-                        font: {
-                            size: 14,
-                            family: 'Arial, sans-serif'
-                        }
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    titleFont: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 14
-                    },
-                    borderColor: '#3a7bd5',
-                    borderWidth: 1
+            options: {
+                plugins: {
+                    title: { display: true, text: 'Vote Distribution by Candidate' },
+                    legend: { position: 'bottom' }
                 }
+            }
+        });
+
+        const timeline = {};
+        data.votes.forEach(v => {
+            const date = new Date(v.timestamp).toLocaleDateString();
+            timeline[date] = (timeline[date] || 0) + 1;
+        });
+
+        new Chart(document.getElementById('votesByDay'), {
+            type: 'line',
+            data: {
+                labels: Object.keys(timeline),
+                datasets: [{
+                    label: 'Votes Per Day',
+                    data: Object.values(timeline),
+                    borderColor: '#3f51b5',
+                    backgroundColor: 'rgba(63, 81, 181, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
             },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        color: '#3a7bd5',
-                        font: {
-                            size: 12
-                        }
-                    }
-                },
-                y: {
-                    grid: {
-                        color: '#e0e0e0'
-                    },
-                    ticks: {
-                        color: '#3a7bd5',
-                        font: {
-                            size: 12
-                        }
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Daily Voting Trend'
                     }
                 }
             }
-        }
-    });
+        });
 
-    // Pie Chart (Votes Distribution)
-    var ctxPie = document.getElementById('votesDistribution').getContext('2d');
-    var votesDistribution = new Chart(ctxPie, {
-        type: 'pie',
-        data: {
-            labels: ['Candidate A', 'Candidate B', 'Candidate C', 'Candidate D'],
-            datasets: [{
-                label: 'Votes Distribution',
-                data: [400, 250, 150, 60],
-                backgroundColor: ['#4CAF50', '#fc6c25', '#FFC107', '#ee1c75'],
-                hoverBackgroundColor: ['#388E3C', '#D32F2F', '#FFA000', '#ee1c75'],
-                borderWidth: 3,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 3000, // Slow animation duration for pie chart
-                easing: 'easeInOutQuad', // Smooth easing function for pie chart
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Votes Distribution Among Candidates',
-                    font: {
-                        size: 22,
-                        weight: 'bold',
-                        family: 'Arial, sans-serif'
-                    },
-                    color: '#3a3a3a',
-                    padding: {
-                        top: 20,
-                        bottom: 20
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    titleFont: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 14
-                    },
-                    borderColor: '#fff',
-                    borderWidth: 1
-                },
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        color: '#3a3a3a',
-                        font: {
-                            size: 14,
-                            family: 'Arial, sans-serif'
-                        }
-                    }
-                }
-            }
-        }
-    });
+        const electionsContainer = document.getElementById("electionsList");
+        data.elections.forEach(e => {
+            const card = document.createElement("div");
+            card.className = "mb-4";
+            card.innerHTML = `
+            <div class="card h-100 election-card" style="background: linear-gradient(to right bottom, #ffffff, #f8f9fa); border: none; transition: all 0.3s ease; border: 2px solid #00bcd4;">
+                <div class="card-body">
+                <div class="d-flex justify-content-start align-items-start mb-3">
+                    <h5 class="card-title text-primary mb-0 fw-bold">${e.title}</h5>
+                    &nbsp&nbsp<span class="badge bg-info rounded-pill">Active</span>
+                </div>
+                <p class="text-muted mb-4">${e.description}</p>
+                <div class="d-flex justify-content-between">
+                    <div class="date-box">
+                    <small class="text-success fw-bold">Start Date</small>
+                    <p class="mb-0"><i class="fas fa-calendar-alt me-2"></i>${e.start_date}</p>
+                    </div>
+                    <div class="date-box">
+                    <small class="text-danger fw-bold">End Date</small>
+                    <p class="mb-0"><i class="fas fa-calendar-check me-2"></i>${e.end_date}</p>
+                    </div>
+                </div>
+                </div>
+            </div>`;
+            card.querySelector('.card').addEventListener('mouseover', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+            });
+            card.querySelector('.card').addEventListener('mouseout', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+            });
+            electionsContainer.appendChild(card);
+        });
 
+    } catch (err) {
+        console.error("Dashboard error:", err);
+    }
+});
 </script>
-{% endblock content %}
+{% endblock %}
+
+
